@@ -2,13 +2,14 @@ import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { CreateSongDto } from './dto/create-song.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Song } from './entities/song.entity';
-import { Repository, UpdateResult } from 'typeorm';
+import { In, Repository, UpdateResult } from 'typeorm';
 import { UpdateSongDto } from './dto/update-song.dto';
 import {
   IPaginationOptions,
   paginate,
   Pagination,
 } from 'nestjs-typeorm-paginate';
+import { Artist } from 'src/artists/entities/artist.entity';
 // import type { Connection } from 'src/common/constants/connection';
 
 @Injectable()
@@ -18,6 +19,7 @@ export class SongsService {
 
   constructor(
     @InjectRepository(Song) private songRepository: Repository<Song>,
+    @InjectRepository(Artist) private artistRepository: Repository<Artist>,
   ) {}
 
   async paginate(options: IPaginationOptions): Promise<Pagination<Song>> {
@@ -27,24 +29,23 @@ export class SongsService {
   }
 
   async create(songDTO: CreateSongDto): Promise<Song> {
-    try {
-      const song = this.songRepository.create({
-        ...songDTO,
-        releasedDate: new Date(songDTO.releasedDate),
-      });
+    const artistIds: number[] = songDTO.artists as number[];
 
-      const savedSong = await this.songRepository.save(song);
-      this.logger.log(`Song created successfully: ${savedSong.title}`);
+    const artists = await this.artistRepository.findBy({
+      id: In(artistIds),
+    });
 
-      return savedSong;
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        this.logger.error(`Failed to create song: ${err.message}`, err.stack);
-      } else {
-        this.logger.error(`Failed to create song: ${String(err)}`);
-      }
-      throw new BadRequestException('Failed to create song');
-    }
+    const song = this.songRepository.create({
+      ...songDTO,
+      releasedDate: new Date(songDTO.releasedDate),
+      artists: artists,
+    });
+
+    const savedSong = await this.songRepository.save(song);
+
+    this.logger.log(`Song created successfully`);
+
+    return savedSong;
   }
 
   findOne(id: number): Promise<Song | null> {
