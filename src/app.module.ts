@@ -7,7 +7,7 @@ import {
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { SongsModule } from './songs/songs.module';
-import { LoggerMiddleware } from './common/middleware/logger/logger.middleware';
+import { LoggerMiddleware } from './common/middleware/logger.middleware';
 import { DevConfigService } from './common/providers/DevConfigService';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
@@ -16,6 +16,8 @@ import { ArtistsModule } from './artists/artists.module';
 import { UsersModule } from './users/users.module';
 import { Artist } from './artists/entities/artist.entity';
 import { User } from './users/entities/user.entity';
+import { PlaylistModule } from './playlist/playlist.module';
+import { Playlist } from './playlist/entities/playlist.entity';
 
 const devConfig = {
   port: 3000,
@@ -32,12 +34,13 @@ const proConfig = {
       port: 5432,
       username: 'pgadmin',
       password: '1234',
-      database: 'n-test',
-      entities: [Song, Artist, User],
+      database: 'spotify-clone-db',
+      entities: [Song, Artist, User, Playlist],
       synchronize: true,
     }),
     UsersModule,
     ArtistsModule,
+    PlaylistModule,
   ],
   controllers: [AppController],
   providers: [
