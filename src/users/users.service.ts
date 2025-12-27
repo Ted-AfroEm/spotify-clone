@@ -1,10 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
-import bcrypt from 'node_modules/bcryptjs';
+import * as bcrypt from 'bcryptjs';
 
 @Injectable()
 export class UsersService {
@@ -18,10 +18,7 @@ export class UsersService {
 
     const user = await this.userRepository.save(createUserDto);
     const { password, ...safeUser } = user;
-return safeUser;
-    //Add  @Exclude() to password 
-    //delete user.password; // 5.
-    return user;
+    return safeUser;
   }
 
   findAll() {
@@ -38,5 +35,15 @@ return safeUser;
 
   remove(id: number) {
     return `This action removes a #${id} user`;
+  }
+
+  async findByEmail(email: string): Promise<User> {
+    const user = await this.userRepository.findOneBy({ email });
+
+    if (!user) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    return user;
   }
 }
