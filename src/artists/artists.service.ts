@@ -20,6 +20,10 @@ export class ArtistsService {
     return await this.artistRepository.save(artist);
   }
 
+  findArtist(userId: number): Promise<Artist | null> {
+    return this.artistRepository.findOneBy({ user: { id: userId } });
+  }
+
   findAll() {
     return `This action returns all artists`;
   }

@@ -5,6 +5,11 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
+import {
+  IPaginationOptions,
+  paginate,
+  Pagination,
+} from 'nestjs-typeorm-paginate';
 
 @Injectable()
 export class UsersService {
@@ -12,7 +17,21 @@ export class UsersService {
     @InjectRepository(User) private userRepository: Repository<User>,
   ) {}
 
+  async paginate(options: IPaginationOptions): Promise<Pagination<User>> {
+    const queryBuilder = this.userRepository.createQueryBuilder('c');
+    queryBuilder.orderBy('c.firstName', 'DESC');
+    return paginate<User>(this.userRepository, options);
+  }
+
   async create(createUserDto: CreateUserDto) {
+    const userExists = await this.userRepository.findOneBy({
+      email: createUserDto.email,
+    });
+
+    if (userExists) {
+      throw new UnauthorizedException('Email already in use');
+    }
+
     const salt = await bcrypt.genSalt();
     createUserDto.password = await bcrypt.hash(createUserDto.password, salt);
 
@@ -21,8 +40,10 @@ export class UsersService {
     return safeUser;
   }
 
-  findAll() {
-    return `This action returns all users`;
+  findAll(): Promise<User[]> {
+    //add pagination
+
+    return this.userRepository.find();
   }
 
   findOne(id: number) {

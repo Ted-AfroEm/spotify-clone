@@ -13,13 +13,13 @@ export class User {
   @Column()
   lastName: string;
 
-  @Column()
+  @Column({ unique: true })
   email: string;
 
   @Exclude()
   @Column()
   password: string;
 
-  @OneToMany(() => Playlist , (playList) => playList.user)
+  @OneToMany(() => Playlist, (playList) => playList.user)
   playLists: Playlist[];
 }

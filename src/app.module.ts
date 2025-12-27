@@ -35,7 +35,7 @@ const proConfig = {
       port: 5432,
       username: 'pgadmin',
       password: '1234',
-      database: 'spotify-clone-db',
+      database: 'spotify_clone_db',
       entities: [Song, Artist, User, Playlist],
       synchronize: true,
     }),
